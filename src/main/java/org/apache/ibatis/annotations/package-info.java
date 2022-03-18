@@ -15,5 +15,9 @@
  */
 /**
  * Contains all the annotation that are used in mapper interfaces.
+ *
+ * 源码注释都写明了：
+ * 这个包的所有注解（其实也就是mybatis的所有注解）都是用在mapper 接口的，不会用在其他什么奇奇怪怪的地方。
+ *
  */
 package org.apache.ibatis.annotations;
