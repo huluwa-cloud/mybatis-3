@@ -31,6 +31,12 @@ import org.apache.ibatis.transaction.Transaction;
  * Ignores all commit or rollback requests.
  * By default, it closes the connection but can be configured not to do it.
  *
+ * <p>
+ *
+ *   ManagedTransaction是可以配置close事务，不close Connection的
+ *
+ * </p>
+ *
  * @author Clinton Begin
  *
  * @see ManagedTransactionFactory
@@ -63,11 +69,19 @@ public class ManagedTransaction implements Transaction {
     return this.connection;
   }
 
+  /**
+   * 从代码可以看出，ManagedTransaction是会忽略任何commit操作的
+   * @throws SQLException
+   */
   @Override
   public void commit() throws SQLException {
     // Does nothing
   }
 
+  /**
+   * 从代码可以看出，ManagedTransaction是会忽略任何rollback操作的
+   * @throws SQLException
+   */
   @Override
   public void rollback() throws SQLException {
     // Does nothing
@@ -75,6 +89,7 @@ public class ManagedTransaction implements Transaction {
 
   @Override
   public void close() throws SQLException {
+    //
     if (this.closeConnection && this.connection != null) {
       if (log.isDebugEnabled()) {
         log.debug("Closing JDBC Connection [" + this.connection + "]");

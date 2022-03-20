@@ -107,6 +107,7 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     try {
       boolean autoCommit;
       try {
+        // SqlSession是否自动提交的设置是从Connection那里拿来的
         autoCommit = connection.getAutoCommit();
       } catch (SQLException e) {
         // Failover to true, as most poor drivers
@@ -115,7 +116,9 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
       }
       final Environment environment = configuration.getEnvironment();
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      // 新建一个SqlSession的时候，是创建一个新的Transaction
       final Transaction tx = transactionFactory.newTransaction(connection);
+      // 根据configuration里面的具体配置创建一个Executor
       final Executor executor = configuration.newExecutor(tx, execType);
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
