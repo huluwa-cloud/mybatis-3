@@ -691,14 +691,19 @@ public class Configuration {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
+    // 批处理的Executor
     if (ExecutorType.BATCH == executorType) {
       executor = new BatchExecutor(this, transaction);
     } else if (ExecutorType.REUSE == executorType) {
       executor = new ReuseExecutor(this, transaction);
     } else {
+      // 默认使用SimpleExecutor
       executor = new SimpleExecutor(this, transaction);
     }
+    // 如果启用了缓存
     if (cacheEnabled) {
+      // 装饰器模式
+      // 如果是使用了cache的，在上面的三种类型的Executor中一种的基础上加码cache特性
       executor = new CachingExecutor(executor);
     }
     executor = (Executor) interceptorChain.pluginAll(executor);

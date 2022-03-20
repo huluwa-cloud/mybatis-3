@@ -88,7 +88,11 @@ public class SqlSessionFactoryBuilder {
     }
   }
 
+  /**
+   * 这里就是创建SqlSessionFactory的底层所在了
+   */
   public SqlSessionFactory build(Configuration config) {
+    // 可以看到就是用配置简单直接的new了一个DefaultSqlSessionFactory
     return new DefaultSqlSessionFactory(config);
   }
 

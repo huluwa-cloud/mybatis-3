@@ -284,6 +284,12 @@ public interface SqlSession extends Closeable {
 
   /**
    * Retrieves inner database connection.
+   *
+   * <p>
+   *   可以知道，每个SqlSession都是关联了一个Connection的。
+   *   所以，SqlSession的具体实现一定是会有一个属性来承接Connection的。
+   *
+   * </p>
    * @return Connection
    */
   Connection getConnection();

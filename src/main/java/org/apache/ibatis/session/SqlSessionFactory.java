@@ -19,7 +19,10 @@ import java.sql.Connection;
 
 /**
  * Creates an {@link SqlSession} out of a connection or a DataSource
- *
+ * <p>
+ *   SqlSessionFactory的职责就是创建Session。
+ *   从它所定义的方法接口就知道全是openSession.
+ * </p>
  * @author Clinton Begin
  */
 public interface SqlSessionFactory {
