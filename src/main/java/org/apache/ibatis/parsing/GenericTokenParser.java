@@ -74,6 +74,14 @@ public class GenericTokenParser {
           builder.append(src, start, src.length - start);
           offset = src.length;
         } else {
+          //=========================================
+          //=========================================
+          //=========================================
+          // XML文件中，${xxx}符号占位符，被Properties文件中的属性的替换逻辑，就是这里！！！！！
+          //=========================================
+          //=========================================
+          //=========================================
+          //=========================================
           builder.append(handler.handleToken(expression.toString()));
           offset = end + closeToken.length();
         }

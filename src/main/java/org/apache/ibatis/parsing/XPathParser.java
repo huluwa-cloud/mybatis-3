@@ -216,6 +216,10 @@ public class XPathParser {
     if (node == null) {
       return null;
     }
+    /*
+     * 每提取一个节点，就把Parser的变量 variables（其实就是Properties文件里面的属性）
+     * 设置给它，作为它的变量
+     */
     return new XNode(this, node, variables);
   }
 
