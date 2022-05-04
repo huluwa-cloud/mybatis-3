@@ -50,12 +50,37 @@ public class PropertyParser {
     // Prevent Instantiation
   }
 
+  //=========================================
+  //=========================================
+  //=========================================
+  // XML文件中，${xxx}符号占位符，被Properties文件中的属性的替换逻辑，就是这里！！！！！
+  //=========================================
+  //=========================================
+  //=========================================
+  //=========================================
   public static String parse(String string, Properties variables) {
     VariableTokenHandler handler = new VariableTokenHandler(variables);
+    // PropertyParser是一个Parser，它这里new了一个通用的Parser   GenericTokenParser。
+    // 所以说，MyBatis的源码大量用了委托和策略模式（回调），而不是像其它很多框架那样，使用继承。
+    // 这里的VariableTokenHandler，就是一个策略接口，GenericTokenParser的parse方法中，回调了它的。TokenHandler.handleToken方法
+    // 而这里是完成了策略注入。
     GenericTokenParser parser = new GenericTokenParser("${", "}", handler);
+    //=========================================
+    //=========================================
+    //=========================================
+    // XML文件中，${xxx}符号占位符，被Properties文件中的属性的替换逻辑，就是这里！！！！！
+    //=========================================
+    //=========================================
+    //=========================================
+    //=========================================
     return parser.parse(string);
   }
 
+  /**
+   *
+   * 注意：VariableTokenHandler是PropertyParser的私有内部类
+   *
+   */
   private static class VariableTokenHandler implements TokenHandler {
     private final Properties variables;
     private final boolean enableDefaultValue;
@@ -86,6 +111,14 @@ public class PropertyParser {
             return variables.getProperty(key, defaultValue);
           }
         }
+        //=========================================
+        //=========================================
+        //=========================================
+        // XML文件中，${xxx}符号占位符，被Properties文件中的属性的替换逻辑，就是这里！！！！！
+        //=========================================
+        //=========================================
+        //=========================================
+        //=========================================
         if (variables.containsKey(key)) {
           return variables.getProperty(key);
         }

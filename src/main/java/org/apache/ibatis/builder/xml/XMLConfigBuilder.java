@@ -103,6 +103,7 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void parseConfiguration(XNode root) {
     try {
       // issue #117 read properties first
+      // 从这里就可以看到<properties>标签是在根标签<configuration>下的
       propertiesElement(root.evalNode("properties"));
       Properties settings = settingsAsProperties(root.evalNode("settings"));
       loadCustomVfs(settings);
@@ -222,12 +223,21 @@ public class XMLConfigBuilder extends BaseBuilder {
   private void propertiesElement(XNode context) throws Exception {
     if (context != null) {
       Properties defaults = context.getChildrenAsProperties();
+      /*
+       * <properties>标签的resource属性的值，其实就是要的properties文件的路径
+       */
       String resource = context.getStringAttribute("resource");
       String url = context.getStringAttribute("url");
       if (resource != null && url != null) {
         throw new BuilderException("The properties element cannot specify both a URL and a resource based property file reference.  Please specify one or the other.");
       }
       if (resource != null) {
+        /*
+         * 读取classpath下的properties文件（resource的值指定的路径）的配置。
+         * 将其读进configuration中。
+         *
+         * defaults是Properties类型，它继承了HashTable
+         */
         defaults.putAll(Resources.getResourceAsProperties(resource));
       } else if (url != null) {
         defaults.putAll(Resources.getUrlAsProperties(url));
@@ -236,6 +246,11 @@ public class XMLConfigBuilder extends BaseBuilder {
       if (vars != null) {
         defaults.putAll(vars);
       }
+      /*
+       *
+       * 在这里将从properties文件中读取的属性，设置到parser（XPathParser）中
+       *
+       */
       parser.setVariables(defaults);
       configuration.setVariables(defaults);
     }
@@ -273,6 +288,9 @@ public class XMLConfigBuilder extends BaseBuilder {
     configuration.setNullableOnForEach(booleanValueOf(props.getProperty("nullableOnForEach"), false));
   }
 
+  /**
+   * 处理environments标签
+   */
   private void environmentsElement(XNode context) throws Exception {
     if (context != null) {
       if (environment == null) {
@@ -324,11 +342,26 @@ public class XMLConfigBuilder extends BaseBuilder {
     throw new BuilderException("Environment declaration requires a TransactionFactory.");
   }
 
+  /**
+   * dataSource标签的处理
+   */
   private DataSourceFactory dataSourceElement(XNode context) throws Exception {
     if (context != null) {
       String type = context.getStringAttribute("type");
+//            <dataSource type="POOLED">
+//                <property name="driver" value="${driver}"/>
+//                <property name="url" value="${url}"/>
+//                <property name="username" value="${username}"/>
+//                <property name="password" value="${password}"/>
+//            </dataSource>
+      // dataSource标签下的子标签都是property
+      // 所有就有了这个getChildrenAsProperties方法
       Properties props = context.getChildrenAsProperties();
       DataSourceFactory factory = (DataSourceFactory) resolveClass(type).getDeclaredConstructor().newInstance();
+      /*
+       * 具体的 DataSourceFactory 都是持有一个DataSource的。
+       * 然后这个setProperties，是通过方法反射，去设置DataSourceFactory中的DataSource的url，username，driver，password之类的值。
+       */
       factory.setProperties(props);
       return factory;
     }
