@@ -16,6 +16,15 @@
 package org.apache.ibatis.session;
 
 /**
+ * bound ==> 边界，范围
+ *
+ * 这个RowBounds定义就是MyBatis的行数范围
+ *
+ * offset和limit，这两个变量，就是划出了一个数据区间。我希望自己有感性认知。
+ * ===========[               数据              ]=============
+ *
+ * 数据范围都可以用这两个变量来表示。
+ *
  * @author Clinton Begin
  */
 public class RowBounds {
@@ -28,8 +37,13 @@ public class RowBounds {
   private final int limit;
 
   public RowBounds() {
+
+    // 默认的offset就是0
     this.offset = NO_ROW_OFFSET;
+
+    // 默认的数据集合大小，是Integer的最大值，就是21个亿
     this.limit = NO_ROW_LIMIT;
+
   }
 
   public RowBounds(int offset, int limit) {
