@@ -39,6 +39,17 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ *
+ * MapperMethod就是Mapper Java接口下的方法的抽象
+ *
+ *
+ * MapperProxy和MapperMethod是 1对多的关系。
+ * 一个MapperProxy实例下，会有多个MapperMethod，用Map存储。（对应的就是一个接口下会有多个方法）
+ *
+ *
+ *
+ *
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
@@ -54,6 +65,17 @@ public class MapperMethod {
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /**
+   *
+   * MapperMethod是Mapper方法的抽象。
+   * MapperMethod的生成，意味着Mapper java接口已经被解析了。
+   * 所以，它的什么type，command之类的，已经被解析了。
+   *
+   *
+   * 能跑到这个execute方法来，就说明已经是MyBatis在执行它的MappedStatement了。
+   *
+   *
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -224,8 +246,7 @@ public class MapperMethod {
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
-      MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
-          configuration);
+      MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass, configuration);
       if (ms == null) {
         if (method.getAnnotation(Flush.class) != null) {
           name = null;
