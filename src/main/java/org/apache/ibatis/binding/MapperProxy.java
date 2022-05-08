@@ -31,6 +31,19 @@ import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.util.MapUtil;
 
 /**
+ *
+ * Mapper的代理类
+ *
+ * 最终暴露给我们使用的那些Mapper接口的实例，其实就是一个MapperProxy的实例。
+ * 因为是用了JDK的动态代理。
+ *
+ * 在MyBatis中，所有的Mapper Java接口的实例，都是一个MapperProxy实例！！！
+ * Spring注入Mapper接口，就是注入的MapperProxy实例。
+ *
+ *
+ *
+ *
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -43,6 +56,14 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   private static final Method privateLookupInMethod;
   private final SqlSession sqlSession;
   private final Class<T> mapperInterface;
+
+  /**
+   * Key就是JDK反射的Method对象
+   *
+   * 这个Map存储的，就是Mapper接口下的多个方法。
+   *
+   *
+   */
   private final Map<Method, MapperMethodInvoker> methodCache;
 
   public MapperProxy(SqlSession sqlSession, Class<T> mapperInterface, Map<Method, MapperMethodInvoker> methodCache) {
@@ -81,8 +102,25 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
       if (Object.class.equals(method.getDeclaringClass())) {
+        // 这里的invoke就是java反射的Method对象。
         return method.invoke(this, args);
       } else {
+        // 这里的invoke方法是MapperMethodInvoker的，
+        // 因为cachedInvoker方法返回的是MapperMethodInvoker.
+
+        // ====================================================
+        // ====================================================
+        // ====================================================
+        // ====================================================
+
+        // 其实，这里最终调用的都是MapperMethod实例的execute方法
+        // org.apache.ibatis.binding.MapperMethod.execute
+
+        // ====================================================
+        // ====================================================
+        // ====================================================
+        // ====================================================
+
         return cachedInvoker(method).invoke(proxy, method, args, sqlSession);
       }
     } catch (Throwable t) {
@@ -90,6 +128,25 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
   }
 
+
+  /**
+   *
+   * 这是之前的cache MapperMethod的方法
+   * 简单明了。从这里也可以看到，全世界的cache方式都是一样的
+   *
+   * 先查有没有，没有了，在存进缓存。
+   *
+   * 现在的，我想不通为什么还要用这个MapperMethodInvoker再包装一层。
+   *
+   */
+//  private MapperMethod cachedMapperMethod(Method method) {
+//    MapperMethod mapperMethod = methodCache.get(method);
+//    if (mapperMethod == null) {
+//      mapperMethod = new MapperMethod(mapperInterface, method, sqlSession.getConfiguration());
+//      methodCache.put(method, mapperMethod);
+//    }
+//    return mapperMethod;
+//  }
   private MapperMethodInvoker cachedInvoker(Method method) throws Throwable {
     try {
       return MapUtil.computeIfAbsent(methodCache, method, m -> {
@@ -100,8 +157,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
             } else {
               return new DefaultMethodInvoker(getMethodHandleJava9(method));
             }
-          } catch (IllegalAccessException | InstantiationException | InvocationTargetException
-              | NoSuchMethodException e) {
+          } catch (IllegalAccessException | InstantiationException | InvocationTargetException | NoSuchMethodException e) {
             throw new RuntimeException(e);
           }
         } else {
