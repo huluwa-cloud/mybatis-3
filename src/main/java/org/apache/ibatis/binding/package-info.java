@@ -14,6 +14,13 @@
  *    limitations under the License.
  */
 /**
+ *
+ *
+ * 这个包的类的职责，就是将mapper java接口绑定到 mapped statement上。
+ *
+ *
  * Bings mapper interfaces with mapped statements.
+ *
+ *
  */
 package org.apache.ibatis.binding;
