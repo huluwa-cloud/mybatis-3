@@ -29,6 +29,9 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ *
+ * 我觉得这个类写得有点无厘头
+ *
  * @author Clinton Begin
  */
 public abstract class BaseBuilder {
@@ -108,6 +111,16 @@ public abstract class BaseBuilder {
     }
   }
 
+  /**
+   *
+   * 有一个 别名(字符串)-->类Class 的Map
+   *
+   * 这个方法就是根据别名拿到对应的Class对象
+   *
+   * @param alias 别名
+   * @return
+   * @param <T>
+   */
   protected <T> Class<? extends T> resolveClass(String alias) {
     if (alias == null) {
       return null;

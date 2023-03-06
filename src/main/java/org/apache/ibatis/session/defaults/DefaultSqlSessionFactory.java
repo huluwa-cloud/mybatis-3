@@ -92,8 +92,27 @@ public class DefaultSqlSessionFactory implements SqlSessionFactory {
     try {
       final Environment environment = configuration.getEnvironment();
       final TransactionFactory transactionFactory = getTransactionFactoryFromEnvironment(environment);
+      /*
+       *
+       * 创建一个SqlSession之前，一定是先创建了一个事务。
+       *
+       */
       tx = transactionFactory.newTransaction(environment.getDataSource(), level, autoCommit);
+      /*
+       *
+       * 开一个SqlSession的时候，也会创建一个Executor.
+       * 而这个新建的Executor是会作为SqlSession的参数的。
+       * 也就是说，一个新的SqlSession一定是会绑定一个新的Executor。
+       *
+       * MappedStatement是用Executor去执行的。
+       *
+       */
       final Executor executor = configuration.newExecutor(tx, execType);
+      // ==========================================
+      // ==========================================
+      //  在这里创建 new 一个SqlSession
+      // ==========================================
+      // ==========================================
       return new DefaultSqlSession(configuration, executor, autoCommit);
     } catch (Exception e) {
       closeTransaction(tx); // may have fetched a connection so lets call close()

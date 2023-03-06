@@ -16,6 +16,12 @@
 package org.apache.ibatis.session;
 
 /**
+ *
+ * 这就是所谓的两级缓存
+ *
+ * session是第一级
+ * statement是第二级
+ *
  * @author Eduardo Macarron
  */
 public enum LocalCacheScope {

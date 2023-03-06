@@ -38,6 +38,10 @@ public class ParamNameResolver {
   private final boolean useActualParamName;
 
   /**
+   *
+   * 这里使用SortedMap的原因就是，后续要做遍历的时候，需要有顺序的遍历出来。
+   *
+   *
    * <p>
    * The key is the index and the value is the name of the parameter.<br />
    * The name is obtained from {@link Param} if specified. When {@link Param} is not specified,
@@ -68,6 +72,18 @@ public class ParamNameResolver {
       }
       String name = null;
       for (Annotation annotation : paramAnnotations[paramIndex]) {
+        /*
+         * ===================================================================
+         * ===================================================================
+         * ===================================================================
+         * ===================================================================
+         * ===================================================================
+         * ===================================================================
+         * ===================================================================
+         *
+         * 这里，就是对@Param注解做逻辑处理的地方
+         *
+         */
         if (annotation instanceof Param) {
           hasParamAnnotation = true;
           name = ((Param) annotation).value();
@@ -85,6 +101,15 @@ public class ParamNameResolver {
           name = String.valueOf(map.size());
         }
       }
+      /*
+       * 记住：JDBC中的PreparedStatement的sql语句中，参数是问号？表示的
+       * https://docs.oracle.com/javase/tutorial/jdbc/basics/prepared.html
+       *
+       *  java.sql.PreparedStatement.setString(int parameterIndex, String x) throws SQLException;
+       * 参数的设置也是通过索引来指定的，没有所谓的参数名的概念，所以！！！！
+       * 这里存储了参数的索引paramIndex，以备后用。
+       *
+       */
       map.put(paramIndex, name);
     }
     names = Collections.unmodifiableSortedMap(map);
@@ -118,6 +143,12 @@ public class ParamNameResolver {
    * @param args
    *          the args
    * @return the named params
+   */
+  /**
+   *
+   * 返回的是一个HashMap
+   *
+   *
    */
   public Object getNamedParams(Object[] args) {
     final int paramCount = names.size();

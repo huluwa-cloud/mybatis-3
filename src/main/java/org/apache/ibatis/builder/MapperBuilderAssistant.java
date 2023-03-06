@@ -129,6 +129,7 @@ public class MapperBuilderAssistant extends BaseBuilder {
       boolean blocking,
       Properties props) {
     Cache cache = new CacheBuilder(currentNamespace)
+      // 这就是新建的Cache的类型PerpetualCache（底层是一个HashMap）
         .implementation(valueOrDefault(typeClass, PerpetualCache.class))
         .addDecorator(valueOrDefault(evictionClass, LruCache.class))
         .clearInterval(flushInterval)

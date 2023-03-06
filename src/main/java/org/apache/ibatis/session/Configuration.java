@@ -109,6 +109,9 @@ public class Configuration {
   protected boolean multipleResultSetsEnabled = true;
   protected boolean useGeneratedKeys;
   protected boolean useColumnLabel = true;
+  /**
+   * 默认是启用缓存的
+   */
   protected boolean cacheEnabled = true;
   protected boolean callSettersOnNulls;
   protected boolean useActualParamName = true;
@@ -120,6 +123,10 @@ public class Configuration {
   protected Class<? extends Log> logImpl;
   protected Class<? extends VFS> vfsImpl;
   protected Class<?> defaultSqlProviderType;
+
+  /**
+   * 缓存的作用域
+   */
   protected LocalCacheScope localCacheScope = LocalCacheScope.SESSION;
   protected JdbcType jdbcTypeForNull = JdbcType.OTHER;
   protected Set<String> lazyLoadTriggerMethods = new HashSet<>(Arrays.asList("equals", "clone", "hashCode", "toString"));
@@ -186,6 +193,7 @@ public class Configuration {
     typeAliasRegistry.registerAlias("MANAGED", ManagedTransactionFactory.class);
 
     typeAliasRegistry.registerAlias("JNDI", JndiDataSourceFactory.class);
+    // POOLED字符串跟PooledDataSourceFactory这个类的对应关系，是在这里塞进去的
     typeAliasRegistry.registerAlias("POOLED", PooledDataSourceFactory.class);
     typeAliasRegistry.registerAlias("UNPOOLED", UnpooledDataSourceFactory.class);
 
@@ -702,8 +710,9 @@ public class Configuration {
     }
     // 如果启用了缓存
     if (cacheEnabled) {
-      // 装饰器模式
-      // 如果是使用了cache的，在上面的三种类型的Executor中一种的基础上加码cache特性
+      // 装饰器模式 （其实就是委托）
+      // 如果是使用了cache的，使用CachingExecutor。
+      // 在上面的三种类型的Executor中一种的基础上加上cache特性
       executor = new CachingExecutor(executor);
     }
     executor = (Executor) interceptorChain.pluginAll(executor);

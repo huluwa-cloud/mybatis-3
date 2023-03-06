@@ -91,16 +91,37 @@ import org.apache.ibatis.type.TypeHandler;
 import org.apache.ibatis.type.UnknownTypeHandler;
 
 /**
+ *
+ * Mapper接口注解解析器
+ *
+ *
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */
 public class MapperAnnotationBuilder {
 
-  private static final Set<Class<? extends Annotation>> statementAnnotationTypes = Stream
-      .of(Select.class, Update.class, Insert.class, Delete.class, SelectProvider.class, UpdateProvider.class,
-          InsertProvider.class, DeleteProvider.class)
+  private static final Set<Class<? extends Annotation>> statementAnnotationTypes =
+    Stream.of(
+      Select.class,
+      Update.class,
+      Insert.class,
+      Delete.class,
+      SelectProvider.class,
+      UpdateProvider.class,
+      InsertProvider.class,
+      DeleteProvider.class)
       .collect(Collectors.toSet());
 
+  /**
+   *
+   *
+   * 不管是Mapper XML文件还是 Mapper Java接口，最终都会解析为MappedStatement，存储在Configuration中。
+   * 这个MapperAnnotationBuilder对Mapper Java 接口做了解析之后，会转换为MappedStatement，并存起来。
+   * 所以，它持有一个Configuration就不足为怪了。
+   *
+   *
+   *
+   */
   private final Configuration configuration;
   private final MapperBuilderAssistant assistant;
   private final Class<?> type;
@@ -614,6 +635,12 @@ public class MapperAnnotationBuilder {
     return answer;
   }
 
+  /**
+   *
+   * 在这里读取Mapper接口注解的value，其实也就是 对应的sql语句。
+   *
+   *
+   */
   private SqlSource buildSqlSource(Annotation annotation, Class<?> parameterType, LanguageDriver languageDriver,
       Method method) {
     if (annotation instanceof Select) {
@@ -630,8 +657,7 @@ public class MapperAnnotationBuilder {
     return new ProviderSqlSource(assistant.getConfiguration(), annotation, type, method);
   }
 
-  private SqlSource buildSqlSourceFromStrings(String[] strings, Class<?> parameterTypeClass,
-      LanguageDriver languageDriver) {
+  private SqlSource buildSqlSourceFromStrings(String[] strings, Class<?> parameterTypeClass, LanguageDriver languageDriver) {
     return languageDriver.createSqlSource(configuration, String.join(" ", strings).trim(), parameterTypeClass);
   }
 
@@ -641,9 +667,10 @@ public class MapperAnnotationBuilder {
     return getAnnotationWrapper(method, errorIfNoMatch, Arrays.asList(targetTypes));
   }
 
-  private Optional<AnnotationWrapper> getAnnotationWrapper(Method method, boolean errorIfNoMatch,
-      Collection<Class<? extends Annotation>> targetTypes) {
+  private Optional<AnnotationWrapper> getAnnotationWrapper(Method method, boolean errorIfNoMatch, Collection<Class<? extends Annotation>> targetTypes) {
+
     String databaseId = configuration.getDatabaseId();
+
     Map<String, AnnotationWrapper> statementAnnotations = targetTypes.stream()
         .flatMap(x -> Arrays.stream(method.getAnnotationsByType(x))).map(AnnotationWrapper::new)
         .collect(Collectors.toMap(AnnotationWrapper::getDatabaseId, x -> x, (existing, duplicate) -> {
@@ -673,6 +700,17 @@ public class MapperAnnotationBuilder {
     private final String databaseId;
     private final SqlCommandType sqlCommandType;
 
+    /**
+     * ===============================================================================
+     * ===============================================================================
+     * ===============================================================================
+     *
+     * 在这里去解析Mapper接口的注解，提取出MapperStatement的 sqlCommandType
+     *
+     * ===============================================================================
+     * ===============================================================================
+     * ===============================================================================
+     */
     AnnotationWrapper(Annotation annotation) {
       super();
       this.annotation = annotation;

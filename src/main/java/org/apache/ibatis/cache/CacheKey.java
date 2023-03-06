@@ -87,6 +87,14 @@ public class CacheKey implements Cloneable, Serializable {
     }
   }
 
+  /**
+   *
+   * CacheKey是要作为HashMap的Key的，所以重写了它的equals和hashCode方法.
+   *
+   * 要CacheKey 相等，条件还是很苛刻的。
+   * 所以，是能保证Key一定是对的上的，不会产生错误。
+   *
+   */
   @Override
   public boolean equals(Object object) {
     if (this == object) {
@@ -118,6 +126,11 @@ public class CacheKey implements Cloneable, Serializable {
     return true;
   }
 
+  /**
+   *
+   * CacheKey是要作为HashMap的Key的，所以重写了它的equals和hashCode方法
+   *
+   */
   @Override
   public int hashCode() {
     return hashcode;
@@ -132,9 +145,17 @@ public class CacheKey implements Cloneable, Serializable {
     return returnValue.toString();
   }
 
+  /**
+   *
+   * 还继承了Clonealbe接口，重写了clone方法
+   *
+   */
   @Override
   public CacheKey clone() throws CloneNotSupportedException {
+
+    // 但凡是clone方法的重写，都会有super.clone方法的调用
     CacheKey clonedCacheKey = (CacheKey) super.clone();
+
     clonedCacheKey.updateList = new ArrayList<>(updateList);
     return clonedCacheKey;
   }

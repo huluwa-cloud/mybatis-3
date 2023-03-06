@@ -24,6 +24,10 @@ import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
 
 /**
+ *
+ * 体会设计思想、设计意图，最好就是看接口定义。
+ * 这个SqlSession接口，注释文档说了，可以通过SqlSession来执行命令，获取Mapper以及管理事务。
+ *
  * The primary Java interface for working with MyBatis.
  * Through this interface you can execute commands, get mappers and manage transactions.
  *

@@ -33,6 +33,9 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ *
+ * 装饰器模式（委托）
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */
@@ -92,6 +95,12 @@ public class CachingExecutor implements Executor {
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
+    /*
+     * MyBatis 二级缓存， Statement的缓存
+     *
+     *
+     *
+     */
     Cache cache = ms.getCache();
     if (cache != null) {
       flushCacheIfRequired(ms);

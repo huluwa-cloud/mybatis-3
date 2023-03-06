@@ -395,32 +395,65 @@ public class XMLConfigBuilder extends BaseBuilder {
     }
   }
 
+  /**
+   *
+   * 解析<mappers>标签
+   *
+   */
   private void mapperElement(XNode parent) throws Exception {
     if (parent != null) {
+      // 遍历<mappers>的子标签
       for (XNode child : parent.getChildren()) {
+
+//<!-- Register all interfaces in a package as mappers -->
+//<mappers>
+// <package name="org.mybatis.builder"/>
+//</mappers>
+        /*
+         * 使用<package>标签的
+         */
         if ("package".equals(child.getName())) {
           String mapperPackage = child.getStringAttribute("name");
           configuration.addMappers(mapperPackage);
         } else {
+//<!-- Using mapper interface classes -->
+//<mappers>
+// <mapper class="org.mybatis.builder.AuthorMapper"/>
+// <mapper class="org.mybatis.builder.BlogMapper"/>
+// <mapper class="org.mybatis.builder.PostMapper"/>
+//</mappers>
+          /*
+           * 使用mapper标签的
+           */
+
+          // 提取<mapper>标签的属性
           String resource = child.getStringAttribute("resource");
           String url = child.getStringAttribute("url");
           String mapperClass = child.getStringAttribute("class");
+
+          // 1. 使用resource属性指定classpath下Mapper XML文件方式的
           if (resource != null && url == null && mapperClass == null) {
             ErrorContext.instance().resource(resource);
             try(InputStream inputStream = Resources.getResourceAsStream(resource)) {
               XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, resource, configuration.getSqlFragments());
               mapperParser.parse();
             }
+          // 2. 使用url属性指定其它位置（比如文件系统）下Mapper XML文件方式的
           } else if (resource == null && url != null && mapperClass == null) {
             ErrorContext.instance().resource(url);
             try(InputStream inputStream = Resources.getUrlAsStream(url)){
               XMLMapperBuilder mapperParser = new XMLMapperBuilder(inputStream, configuration, url, configuration.getSqlFragments());
               mapperParser.parse();
             }
+          // 3. 使用class属性指定Mapper java接口的方式
           } else if (resource == null && url == null && mapperClass != null) {
             Class<?> mapperInterface = Resources.classForName(mapperClass);
             configuration.addMapper(mapperInterface);
           } else {
+//            throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");
+            /*
+             * 意思就是<mapper>标签下，url，resource，class 三种属性，只能写一个，写多了，给你扔异常
+             */
             throw new BuilderException("A mapper element may only specify a url, resource or class, but not more than one.");
           }
         }

@@ -27,6 +27,9 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 
 /**
+ *
+ *
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
@@ -47,6 +50,10 @@ public class MapperRegistry {
       throw new BindingException("Type " + type + " is not known to the MapperRegistry.");
     }
     try {
+      /*
+       * MapperProxyFactory创建MapperProxy的时候，一定是会传一个SqlSession。
+       * 因为MapperProxy是和SqlSession绑定的。
+       */
       return mapperProxyFactory.newInstance(sqlSession);
     } catch (Exception e) {
       throw new BindingException("Error getting mapper instance. Cause: " + e, e);
@@ -57,9 +64,20 @@ public class MapperRegistry {
     return knownMappers.containsKey(type);
   }
 
+  /**
+   *
+   * 只要是走的Java 接口形式的Mapper，不用问，都知道需要反射来读取接口的元数据信息。
+   * 而使用反射的主要抓手就是Class对象。
+   *
+   */
   public <T> void addMapper(Class<T> type) {
+    /*
+     * 从这里可以看到，MyBatis认的Mapper，只认接口定义的。
+     * 如果Mapper是一个抽象类或者具体类，那么MyBatis是不认的，直接忽略。
+     */
     if (type.isInterface()) {
       if (hasMapper(type)) {
+        // 如果这个mapper已经注册过了，就会直接抛异常
         throw new BindingException("Type " + type + " is already known to the MapperRegistry.");
       }
       boolean loadCompleted = false;
@@ -99,6 +117,8 @@ public class MapperRegistry {
    * @since 3.2.2
    */
   public void addMappers(String packageName, Class<?> superType) {
+    // 明明是一个mapper标签，每个package属性，就new一个的解析器。
+    // 但却使用Util工具类来命名。我感觉奇奇怪怪的。
     ResolverUtil<Class<?>> resolverUtil = new ResolverUtil<>();
     resolverUtil.find(new ResolverUtil.IsA(superType), packageName);
     Set<Class<? extends Class<?>>> mapperSet = resolverUtil.getClasses();

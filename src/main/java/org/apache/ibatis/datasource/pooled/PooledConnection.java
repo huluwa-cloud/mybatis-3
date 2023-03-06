@@ -24,6 +24,9 @@ import java.sql.SQLException;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ *
+ * 注意：PooledConnection代理了Connection接口，它实现了InvocationHandler，编写了代理逻辑。
+ *
  * @author Clinton Begin
  */
 class PooledConnection implements InvocationHandler {
@@ -33,6 +36,8 @@ class PooledConnection implements InvocationHandler {
 
   private final int hashCode;
   private final PooledDataSource dataSource;
+  // PooledConnection封装了真实的Connection，包装了一层。
+  // 原因：1）做了代理 2）加了checkoutTimestamp，createdTimestamp，lastUsedTimestamp这些时间戳
   private final Connection realConnection;
   private final Connection proxyConnection;
   private long checkoutTimestamp;
@@ -56,7 +61,11 @@ class PooledConnection implements InvocationHandler {
     this.createdTimestamp = System.currentTimeMillis();
     this.lastUsedTimestamp = System.currentTimeMillis();
     this.valid = true;
+    /*
+     * !!!!!!!!!!!!!!!!!!! PooledConnection代理了Connection接口 !!!!!!!!!!!!!!!!!!!!!
+     */
     this.proxyConnection = (Connection) Proxy.newProxyInstance(Connection.class.getClassLoader(), IFACES, this);
+
   }
 
   /**
@@ -242,7 +251,12 @@ class PooledConnection implements InvocationHandler {
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     String methodName = method.getName();
+    // ======================================
+    // PooledConnection是代理了JDK原生的Connection接口，
+    // 所以调用Connection#close方法，其实就是将连接放回连接池中。
+    // ======================================
     if (CLOSE.equals(methodName)) {
+      // 把数据库连接放回连接池里
       dataSource.pushConnection(this);
       return null;
     }

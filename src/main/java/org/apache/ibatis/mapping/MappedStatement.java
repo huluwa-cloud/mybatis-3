@@ -41,6 +41,10 @@ public final class MappedStatement {
   private StatementType statementType;
   private ResultSetType resultSetType;
   private SqlSource sqlSource;
+
+  /**
+   * 这里就是Statement级别的缓存了
+   */
   private Cache cache;
   private ParameterMap parameterMap;
   private List<ResultMap> resultMaps;

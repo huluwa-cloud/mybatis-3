@@ -268,6 +268,8 @@ public class ResolverUtil<T> {
    * @return the package path
    */
   protected String getPackagePath(String packageName) {
+    // 感觉笑死，就是在这里，将包名转化为包的文件目录路径的
+    // 真真是简单到爆的操作，源码，其实真的没啥好神奇的
     return packageName == null ? null : packageName.replace('.', '/');
   }
 
@@ -276,7 +278,7 @@ public class ResolverUtil<T> {
    * resolved classes if and only if it is approved by the Test supplied.
    *
    * @param test the test used to determine if the class matches
-   * @param fqn the fully qualified name of a class
+   * @param fqn the fully qualified name of a class （就是类的全限定名）
    */
   @SuppressWarnings("unchecked")
   protected void addIfMatching(Test test, String fqn) {
@@ -286,14 +288,18 @@ public class ResolverUtil<T> {
       if (log.isDebugEnabled()) {
         log.debug("Checking to see if class " + externalName + " matches criteria [" + test + "]");
       }
-
+      /*
+       * 不用问，我都知道一定有一个类加载的过程。想都不用想。
+       */
       Class<?> type = loader.loadClass(externalName);
       if (test.matches(type)) {
+        /*
+         * 然后把加载了的类的Class对象，存储起来。
+         */
         matches.add((Class<T>) type);
       }
     } catch (Throwable t) {
-      log.warn("Could not examine class '" + fqn + "'" + " due to a "
-          + t.getClass().getName() + " with message: " + t.getMessage());
+      log.warn("Could not examine class '" + fqn + "'" + " due to a " + t.getClass().getName() + " with message: " + t.getMessage());
     }
   }
 }

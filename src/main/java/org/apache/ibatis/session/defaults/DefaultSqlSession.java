@@ -73,6 +73,15 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <T> T selectOne(String statement, Object parameter) {
     // Popular vote was to return null on 0 results and throw exception on too many.
+    /*
+     * 可以看到selectOne的本质还是调用的selectList。
+     *
+     * 还有一个事情很有趣：
+     * 为什么selectOne，如果查不到数据就返回null，如果返回数据多余一个，就抛出TooManyResultsException。
+     * 因为这个是他们源代码作者们投票的结果，哈哈哈哈哈。
+     * 这个上面的注释写明了。
+     *
+     */
     List<T> list = this.selectList(statement, parameter);
     if (list.size() == 1) {
       return list.get(0);
@@ -145,6 +154,19 @@ public class DefaultSqlSession implements SqlSession {
     return selectList(statement, parameter, rowBounds, Executor.NO_RESULT_HANDLER);
   }
 
+  /**
+   *
+   * %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   * &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+   *
+   * 哈哈哈哈哈，所有的查询接口(select, selectOne, selectList，一堆的重载方法)，都是归于调用这个接口。
+   *
+   * 就是做到统一，然后再做不同的接口，方便使用。
+   * 如果是我来写，我也会用这样的思想。
+   *
+   * %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+   * &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+   */
   private <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds, ResultHandler handler) {
     try {
       MappedStatement ms = configuration.getMappedStatement(statement);
@@ -285,6 +307,16 @@ public class DefaultSqlSession implements SqlSession {
 
   @Override
   public <T> T getMapper(Class<T> type) {
+    /*
+     *
+     * 为什么能从Configuration中直接能get出Mapper呢？
+     * 1. Configuration里面其实是有一个MapperRegistry（就是所谓的Mapper注册中心）
+     * 2. 这个MapperRegistry中含有一个 Class(就是Mapper Java接口)--> MapperProxyFactory的HashMap
+     * 3. 然后通过Configuration用Mapper JDK接口的Class类型去getMapper的时候，就能过获得MapperProxyFactory
+     * 4. 最后通过MapperProxyFactory.newInstance方法，就可以得到一个MapperProxy实例。
+     * 5. 通过MapperProxy实例，我们就能执行我们想要的MappedStatement了（就是我们的SQL命令）.
+     *
+     */
     return configuration.getMapper(type, this);
   }
 
@@ -309,6 +341,19 @@ public class DefaultSqlSession implements SqlSession {
     cursorList.add(cursor);
   }
 
+  /**
+   * 这个方法表示当前的SqlSession，是否需要提交或者回滚？
+   *
+   * 返回值为true的情况
+   * 情况1：
+   * 如果参数force指定必须强制回滚，那么就必须回滚。
+   *
+   * 情况2：
+   * 如果这个SqlSession不是自动提交，也就是需要手动提交，
+   * 并且有了产生脏数据的操作（比如update），就会是返回true。
+   * 那么就意味着，这个SqlSession，在close的时候，就是需要回滚。
+   *
+   */
   private boolean isCommitOrRollbackRequired(boolean force) {
     return (!autoCommit && dirty) || force;
   }

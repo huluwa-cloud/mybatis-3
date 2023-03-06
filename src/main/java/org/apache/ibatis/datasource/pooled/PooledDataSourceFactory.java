@@ -18,10 +18,18 @@ package org.apache.ibatis.datasource.pooled;
 import org.apache.ibatis.datasource.unpooled.UnpooledDataSourceFactory;
 
 /**
+ * PooledDataSourceFactory只是继承了UnpooledDataSourceFactory
+ * 除了写了自己的构造器，啥逻辑也没加了
+ *
+ *
  * @author Clinton Begin
  */
 public class PooledDataSourceFactory extends UnpooledDataSourceFactory {
 
+  /**
+   * 创建PooledDataSourceFactory的时候，就创建了DataSource（PooledDataSource）了。
+   * UnPooledDataSourceFactory也一样，被创建的时候，就已经创建了UnPooledDataSource。
+   */
   public PooledDataSourceFactory() {
     this.dataSource = new PooledDataSource();
   }

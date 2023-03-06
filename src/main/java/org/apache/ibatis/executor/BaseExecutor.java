@@ -45,6 +45,9 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * BaseXXXX, 一看这种名字，就知道是模板方法模式了
+ *
+ *
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {
@@ -55,6 +58,16 @@ public abstract class BaseExecutor implements Executor {
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+
+  /**
+   *
+   * 看MyBatis定义的Cache接口，就知道，它是一个Map结构。
+   * Perpetual==》 永恒的
+   * PerpetualCache里面用的就是一个HashMap
+   *
+   *
+   *
+   */
   protected PerpetualCache localCache;
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
@@ -113,6 +126,9 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    /*
+     * 执行更新操作（update，delete，insert）前，完全清空本地缓存
+     */
     clearLocalCache();
     return doUpdate(ms, parameter);
   }
@@ -143,6 +159,15 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+
+//<select ... flushCache="false" useCache="true"/>
+//<insert ... flushCache="true"/>
+//<update ... flushCache="true"/>
+//<delete ... flushCache="true"/>
+
+    // 一个标签就是一个statement，
+    // 所以标签的flushCache就是对应的MappedStatement的flushCacheRequired
+    // 而所谓的flushCache就是把
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
       clearLocalCache();
     }
@@ -153,6 +178,12 @@ public abstract class BaseExecutor implements Executor {
       if (list != null) {
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
+        /*
+         * ===================================
+         * 缓存里面没有要的数据，就直接从数据库里面查询
+         * ===================================
+         *
+         */
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
@@ -259,6 +290,17 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /**
+   *
+   * ！！！！！！！！！！！！！！！！
+   * ！！！！！！！！！！！！！！！！
+   * ！！！！！！！！！！！！！！！！
+   * 注意，这个clearLocalCache是把所有缓存都清空的意思！！！！！！！！！！！！
+   * ！！！！！！！！！！！！！！！！
+   * ！！！！！！！！！！！！！！！！
+   * ！！！！！！！！！！！！！！！！
+   *
+   */
   @Override
   public void clearLocalCache() {
     if (!closed) {
@@ -324,12 +366,25 @@ public abstract class BaseExecutor implements Executor {
     try {
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
+      // 在下面放入缓存之前，先清掉对应的key的缓存
       localCache.removeObject(key);
     }
+    /*
+     *
+     * ============================================
+     * ============================================
+     * 从数据库中查出数据来之后，放到缓存中
+     * ============================================
+     * ============================================
+     *
+     */
     localCache.putObject(key, list);
+
+    // 如果是存储过程
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);
     }
+
     return list;
   }
 

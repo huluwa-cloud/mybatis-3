@@ -34,6 +34,12 @@ public interface Executor {
 
   ResultHandler NO_RESULT_HANDLER = null;
 
+  /**
+   *
+   * 注意：更新update、插入insert、删除delete都合并为了update!!!!!
+   * 所以，在MyBatis的底层逻辑里面，没有所谓insert或者delete
+   *
+   */
   int update(MappedStatement ms, Object parameter) throws SQLException;
 
   <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey cacheKey, BoundSql boundSql) throws SQLException;

@@ -54,6 +54,18 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
       | MethodHandles.Lookup.PACKAGE | MethodHandles.Lookup.PUBLIC;
   private static final Constructor<Lookup> lookupConstructor;
   private static final Method privateLookupInMethod;
+
+  /**
+   *
+   * 注意了！！！
+   *
+   * 每个MapperProxy实例都是持有一个SqlSession的，
+   * 也就是说MapperProxy实例的Scope和SqlSession是一样的。
+   *
+   * 其实MapperProxy对应着所谓的Mapper java接口，但是它的底层，
+   * 其实还是使用的SqlSession来执行MappedStatement。
+   *
+   */
   private final SqlSession sqlSession;
   private final Class<T> mapperInterface;
 
